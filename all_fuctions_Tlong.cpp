@@ -158,6 +158,13 @@ public:
         return -cmp_abs(num);
     }
 
+    int cmp_with_zero() const
+    {
+        if (sign=='-') return -1;
+        if (is_zero()) return 0;
+        return 1;
+    }
+
     bool operator<(const Tlong &num) const
     {
         return cmp(num)==-1;
@@ -186,13 +193,6 @@ public:
     bool operator!=(const Tlong &num) const
     {
         return cmp(num)!=0;
-    }
-
-    int cmp_with_zero() const
-    {
-        if (sign=='-') return -1;
-        if (is_zero()) return 0;
-        return 1;
     }
 
     /*int operator[](int n_dig) const
