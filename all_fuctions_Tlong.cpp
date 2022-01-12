@@ -79,15 +79,10 @@ class Tlong
         return res;
     }
 
-    Tlong half_divide(int denominator) const
+    Tlong half_divide_abs(int denominator) const
     {
         Tlong res;
-        char sign_divide, sign_denominator;
-        if (denominator>0) sign_denominator='+';
-        else sign_denominator='-';
         denominator=abs(denominator);
-        if (sign==sign_denominator) sign_divide='+';
-        else sign_divide='-';
         int remaind=0;
         for (int i=nmax-len; i<nmax; ++i)
         {
@@ -97,26 +92,18 @@ class Tlong
             remaind%=denominator;
         }
         res.len=res.find_length(len);
-        if (res.is_zero()) res.sign='+';
-        else res.sign=sign_divide;
         return res;
     }
 
-    int half_divide_ost(int denominator) const
+    int half_divide_ost_abs(int denominator) const
     {
-        char sign_divide, sign_denominator;
-        if (denominator>0) sign_denominator='+';
-        else sign_denominator='-';
         denominator=abs(denominator);
-        if (sign==sign_denominator) sign_divide='+';
-        else sign_divide='-';
         int remaind=0;
         for (int i=nmax-len; i<nmax; ++i)
         {
             remaind=remaind*10+number[i];
             remaind%=denominator;
         }
-        if (sign_divide == '-') remaind*=-1;
         return remaind;
     }
 public:
@@ -302,12 +289,17 @@ public:
 
     int operator%(int denominator) const
     {
-        return half_divide_ost(denominator);
+        int ost=half_divide_ost_abs(denominator);
+        if (sign=='-') return -ost;
+        return ost;
     }
 
     Tlong operator/(int denominator) const
     {
-        return half_divide(denominator);
+        Tlong res(half_divide_abs(denominator));
+        if(res.is_zero() || sign=='+' && denominator>0 || sign=='-' && denominator<0) return res;
+        res.sign='-';
+        return res;
     }
 
     Tlong& operator*=(const Tlong &num)
@@ -337,10 +329,12 @@ istream& operator>>(istream& in, Tlong &num)
     {
         num.sign=S[0];
         S.erase(0,1);
+        --length;
     }
     num.len=length;
     for (int i=0; i<num.len; ++i)
         num.number[nmax-num.len+i]=S[i]-48;
+    return in;
 }
 
 ostream& operator<<(ostream &out, const Tlong &num)
@@ -348,6 +342,7 @@ ostream& operator<<(ostream &out, const Tlong &num)
     if(num.sign=='-') out<<num.sign;
     for (int i=nmax-num.len; i<nmax; ++i)
         out<<num.number[i];
+    return out;
 }
 
 /*void inp_2nums(Tlong &num1, Tlong &num2)
