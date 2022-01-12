@@ -9,11 +9,19 @@ class Tlong
     int number[nmax]={};
     int len=1;
 
-    void zeroing()
+    void zeroing(int n_end=nmax)
     {
         sign='+';
-        for (int i=nmax-len; i<nmax; ++i) number[i]=0;
+        for (int i=nmax-len; i<n_end; ++i) number[i]=0;
         len=1;
+    }
+
+    int find_length(int indent_from_right_edge=nmax)
+    {
+        int ind_start=nmax-indent_from_right_edge;
+        while (ind_start<nmax && number[ind_start]==0) ++ind_start;
+        if (ind_start==nmax) return 1;
+        return nmax-ind_start;
     }
 
     Tlong add_abs(const Tlong &num) const
@@ -42,7 +50,7 @@ class Tlong
         }
         return 0;
     }
-    
+
     Tlong sub_abs(const Tlong &num) const
     {
         Tlong res;
@@ -71,7 +79,7 @@ class Tlong
         return res;
     }
 
-    Tlong divide(int denominator) const
+    Tlong half_divide(int denominator) const
     {
         Tlong res;
         char sign_divide, sign_denominator;
@@ -88,13 +96,13 @@ class Tlong
             res.number[i]=remaind/denominator;
             remaind%=denominator;
         }
-        res.len=res.size(nmax-len);
+        res.len=res.find_length(len);
         if (res.is_zero()) res.sign='+';
         else res.sign=sign_divide;
         return res;
     }
 
-    int divide_ost(int denominator) const
+    int half_divide_ost(int denominator) const
     {
         char sign_divide, sign_denominator;
         if (denominator>0) sign_denominator='+';
@@ -134,34 +142,9 @@ public:
         return (len == 1 && number[nmax-1] == 0);
     }
 
-    int size(int ind_start=0)
+    int get_length()
     {
-        int i=ind_start;
-        while (i<nmax && number[i]==0) ++i;
-        if (i==nmax) return 1;
-        return nmax-i;
-    }
-
-    void inp_num()
-    {
-        string S;
-        cin>>S;
-        zeroing();
-        if (S[0]=='+' || S[0]=='-') 
-        {
-            sign=S[0];
-            S.erase(0,1);
-        }
-        len=S.size();
-        for (int i=0; i<len; ++i)
-            number[nmax-len+i]=S[i]-48;
-    }
-
-    void out_num() 
-    {
-        if(sign=='-') cout<<sign;
-        for (int i=nmax-len; i<nmax; ++i)
-            cout<<number[i];
+        return len;
     }
 
     int cmp(const Tlong &num1) const
@@ -175,12 +158,22 @@ public:
         return -cmp_abs(num1);
     }
 
+    /*int operator[](int n_dig) const
+    {
+        return number[nmax-len-1+n_dig];
+    }*/
+
     Tlong operator-() const
     {
         Tlong inverse_num=*this;
         if (is_zero() || sign == '-') inverse_num.sign='+';
         else inverse_num.sign='-';
         return inverse_num;
+    }
+
+    Tlong& operator+()
+    {
+        return *this;
     }
 
     Tlong operator+(const Tlong &num) const
@@ -216,6 +209,7 @@ public:
                 ++i;
             }
             ++number[nmax-i];
+            if (i>len) ++len;
         }
         else
         {
@@ -226,12 +220,34 @@ public:
             }
             --number[nmax-i];
             if(is_zero()) sign='+';
+            len=find_length(len);
         }
-        if (i>len) ++len;
-        if(number[nmax-len]==0) --len;
         return *this;
     }
-    
+
+    Tlong& operator--()
+    {
+        *this=-(++(-*this));
+        return *this;
+    }
+
+    Tlong operator*(int num)
+    {
+        Tlong res;
+        if (is_zero() || num==0) return res;
+        int S, p=0;
+        if (sign=='+' && num>0 || sign=='-' && num<0) res.sign='+';
+        else res.sign='-';
+        for(int i=1; i<=len-10; ++i)
+        {
+            S=num*number[nmax-i]+p;
+            p=S/10;
+            res.number[nmax-i]=S%10;
+        }
+        res.len=find_length(len+10);
+        return res;
+    }
+
     Tlong operator*(const Tlong &num)
     {
         Tlong res;
@@ -252,14 +268,14 @@ public:
         return res;
     }
 
-    int operator%(long long denominator) const
+    int operator%(int denominator) const
     {
-        return divide_ost(denominator);
+        return half_divide_ost(denominator);
     }
 
     Tlong operator/(int denominator)
     {
-        return divide(denominator);
+        return half_divide(denominator);
     }
 
     Tlong& operator*=(const Tlong &num)
@@ -273,7 +289,34 @@ public:
         *this=*this+num;
         return *this;
     }
+
+    friend istream& operator>>(istream &in, Tlong &num);
+
+    friend ostream& operator<<(ostream &out, const Tlong &num);
 };
+
+istream& operator>>(istream& in, Tlong &num)
+{
+    string S;
+    in>>S;
+    int length=S.size();
+    num.zeroing(nmax-length);
+    if (S[0]=='+' || S[0]=='-')
+    {
+        num.sign=S[0];
+        S.erase(0,1);
+    }
+    num.len=length;
+    for (int i=0; i<num.len; ++i)
+        num.number[nmax-num.len+i]=S[i]-48;
+}
+
+ostream& operator<<(ostream &out, const Tlong &num)
+{
+    if(num.sign=='-') out<<num.sign;
+    for (int i=nmax-num.len; i<nmax; ++i)
+        out<<num.number[i];
+}
 
 /*void inp_2nums(Tlong &num1, Tlong &num2)
 {
@@ -283,7 +326,7 @@ public:
     num2.zeroing();
     int n1_len=0, n2_len=0;
     num1.sign='+';
-    if (S[0]=='+' || S[0]=='-') 
+    if (S[0]=='+' || S[0]=='-')
     {
         num1.sign=S[0];
         S.erase(0,1);
