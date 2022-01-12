@@ -16,7 +16,7 @@ class Tlong
         len=1;
     }
 
-    int find_length(int indent_from_right_edge=nmax)
+    int find_length(int indent_from_right_edge=nmax) const
     {
         int ind_start=nmax-indent_from_right_edge;
         while (ind_start<nmax && number[ind_start]==0) ++ind_start;
@@ -142,20 +142,57 @@ public:
         return (len == 1 && number[nmax-1] == 0);
     }
 
-    int get_length()
+    int get_length() const
     {
         return len;
     }
 
-    int cmp(const Tlong &num1) const
+    int cmp(const Tlong &num) const
     {
-        if (sign!=num1.sign)
+        if (sign!=num.sign)
         {
             if (sign == '+') return 1;
             return -1;
         }
-        if (sign=='+') return cmp_abs(num1);
-        return -cmp_abs(num1);
+        if (sign=='+') return cmp_abs(num);
+        return -cmp_abs(num);
+    }
+
+    bool operator<(const Tlong &num) const
+    {
+        return cmp(num)==-1;
+    }
+
+    bool operator==(const Tlong &num) const
+    {
+        return cmp(num)==0;
+    }
+
+    bool operator>(const Tlong &num) const
+    {
+        return cmp(num)==1;
+    }
+
+    bool operator<=(const Tlong &num) const
+    {
+        return cmp(num)!=1;
+    }
+
+    bool operator>=(const Tlong &num) const
+    {
+        return cmp(num)!=-1;
+    }
+
+    bool operator!=(const Tlong &num) const
+    {
+        return cmp(num)!=0;
+    }
+
+    int cmp_with_zero() const
+    {
+        if (sign=='-') return -1;
+        if (is_zero()) return 0;
+        return 1;
     }
 
     /*int operator[](int n_dig) const
@@ -169,11 +206,6 @@ public:
         if (is_zero() || sign == '-') inverse_num.sign='+';
         else inverse_num.sign='-';
         return inverse_num;
-    }
-
-    Tlong& operator+()
-    {
-        return *this;
     }
 
     Tlong operator+(const Tlong &num) const
@@ -231,7 +263,7 @@ public:
         return *this;
     }
 
-    Tlong operator*(int num)
+    Tlong operator*(int num) const
     {
         Tlong res;
         if (is_zero() || num==0) return res;
@@ -248,7 +280,7 @@ public:
         return res;
     }
 
-    Tlong operator*(const Tlong &num)
+    Tlong operator*(const Tlong &num) const
     {
         Tlong res;
         if (is_zero() || num.is_zero()) return res;
@@ -273,7 +305,7 @@ public:
         return half_divide_ost(denominator);
     }
 
-    Tlong operator/(int denominator)
+    Tlong operator/(int denominator) const
     {
         return half_divide(denominator);
     }
