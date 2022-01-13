@@ -106,6 +106,32 @@ class Tlong
         }
         return remaind;
     }
+
+    Tlong multiply(const Tlong &num) const
+    {
+        Tlong res;
+        if (is_zero() || num.is_zero()) return res;
+        int S, p=0;
+        if (sign==num.sign) res.sign='+';
+        else res.sign='-';
+        for(int i=1; i<=num.len; ++i)
+            for (int j=1; j<=len+1; ++j)
+            {
+                S=num.number[nmax-i]*number[nmax-j]+p+res.number[nmax+1-i-j];
+                p=S/10;
+                res.number[nmax+1-i-j]=S%10;
+            }
+        int length=len+num.len-1;
+        if (res.number[nmax-length-1]) ++length;
+        res.len=length;
+        return res;
+    }
+
+    /*Tlong divide_abs(const Tlong &denominator, Tlong &remaind)
+    {
+         remaind.zeroing();
+
+    }*/
 public:
     Tlong(int n=0)
     {
@@ -257,34 +283,20 @@ public:
         int S, p=0;
         if (sign=='+' && num>0 || sign=='-' && num<0) res.sign='+';
         else res.sign='-';
-        for(int i=1; i<=len-10; ++i)
+        for(int i=1; i<=len+11; ++i)
         {
             S=num*number[nmax-i]+p;
             p=S/10;
             res.number[nmax-i]=S%10;
         }
-        res.len=find_length(len+10);
+        res.len=res.find_length(len+11);
         return res;
     }
 
     Tlong operator*(const Tlong &num) const
     {
-        Tlong res;
-        if (is_zero() || num.is_zero()) return res;
-        int S, p=0;
-        if (sign==num.sign) res.sign='+';
-        else res.sign='-';
-        for(int i=1; i<=num.len; ++i)
-            for (int j=1; j<=len+1; ++j)
-            {
-                S=num.number[nmax-i]*number[nmax-j]+p+res.number[nmax+1-i-j];
-                p=S/10;
-                res.number[nmax+1-i-j]=S%10;
-            }
-        int length=len+num.len-1;
-        if (res.number[nmax-length-1]) ++length;
-        res.len=length;
-        return res;
+        if(num.len<len) return multiply(num);
+        return num.multiply(*this);
     }
 
     int operator%(int denominator) const
@@ -311,6 +323,25 @@ public:
     Tlong& operator+=(const Tlong &num)
     {
         *this=*this+num;
+        return *this;
+    }
+
+    Tlong& operator<<=(int n_shifts)
+    {
+        if(is_zero()) return *this;
+        for(int i=nmax-len; i<nmax; ++i)
+            number[i-n_shifts]=number[i];
+        for(int i=nmax-n_shifts; i<nmax; ++i) number[i]=0;
+        len+=n_shifts;
+        return *this;
+    }
+
+    Tlong& operator>>=(int n_shifts)
+    {
+        for(int i=nmax-1-n_shifts; i>=nmax-len; --i)
+            number[i+n_shifts]=number[i];
+        for(int i=nmax-len; i<min(nmax-len+n_shifts, nmax-1); ++i) number[i]=0;
+        len=max(1, len-n_shifts);
         return *this;
     }
 
@@ -403,5 +434,8 @@ Tlong Fibonacci(int n)
 
 int main()
 {
+    ifstream file;
+    file.open("D:text.txt");
+    cout<<Tlong(77)*Tlong(3);
     return 0;
 }
