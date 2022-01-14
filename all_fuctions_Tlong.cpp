@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-const int nmax=200;
+const int nmax=5000;
 
 class Tlong
 {
@@ -394,6 +394,11 @@ public:
         return *this;
     }
 
+    operator bool() const
+    {
+        return !(len == 1 && number[nmax-1] == 0);
+    }
+
     friend istream& operator>>(istream &in, Tlong &num);
 
     friend ostream& operator<<(ostream &out, const Tlong &num);
@@ -413,7 +418,7 @@ int len_n(int n, int base=10)
 
 Tlong pow(int base, int exp)
 {
-    int exp_len_in_bits=len_n(exp, 2), copy_exp=exp;
+    int exp_len_in_bits=len_n(exp, 2);
     Tlong res(1);
     for(int i=exp_len_in_bits-1; i>=0; --i)
     {
@@ -421,6 +426,22 @@ Tlong pow(int base, int exp)
         if(exp>>i&1) res=res*base;
     }
     return res;
+}
+
+Tlong nsd(Tlong a, Tlong b)
+{
+    while(a && b)
+    {
+        if(a<b) swap(a,b);
+        a=a%b;
+    }
+    return a+b;
+
+}
+
+Tlong nsk(const Tlong &a, const Tlong &b)
+{
+    return a*b/nsd(a,b);
 }
 
 istream& operator>>(istream& in, Tlong &num)
