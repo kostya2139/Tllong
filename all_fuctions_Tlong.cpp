@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-const int nmax=10000;
+const int nmax=200;
 
 class Tlong
 {
@@ -399,15 +399,21 @@ public:
     friend ostream& operator<<(ostream &out, const Tlong &num);
 };
 
+int len_n(int n, int base=10)
+{
+    if(n==0) return 1;
+    int cnt=0;
+    while(n)
+    {
+        n/=base;
+        ++cnt;
+    }
+    return cnt;
+}
+
 Tlong pow(int base, int exp)
 {
-    int exp_len_in_bits=0, copy_exp=exp;
-    if(exp==0) exp_len_in_bits=1;
-    while(copy_exp)
-    {
-        ++exp_len_in_bits;
-        copy_exp>>=1;
-    }
+    int exp_len_in_bits=len_n(exp, 2), copy_exp=exp;
     Tlong res(1);
     for(int i=exp_len_in_bits-1; i>=0; --i)
     {
@@ -504,8 +510,5 @@ int main()
     ios_base::sync_with_stdio(0);
     cin.tie(0);
     cout.tie(0);
-    Tlong a,b;
-    cin>>a>>b;
-
     return 0;
 }
