@@ -127,11 +127,45 @@ class Tlong
         return res;
     }
 
-    /*Tlong divide_abs(const Tlong &denominator, Tlong &remaind)
+    Tlong divide_abs(const Tlong &denominator) const
     {
-         remaind.zeroing();
+        Tlong remaind;
+        Tlong res;
+        int dig=0;
+        for(int i=len; i>0; --i)
+        {
+            remaind<<=1;
+            remaind.number[nmax-1]=number[nmax-i];
+            while(remaind.cmp_abs(denominator)!=-1)
+            {
+                remaind=remaind.sub_abs(denominator);
+                ++dig;
+            }
+            res.number[nmax-i]=dig;
+            dig=0;
+        }
+        if(len<=denominator.len)
+        {
+            res.len=1;
+            return res;
+        }
+        res.len=len-denominator.len;
+        if (res.number[nmax-res.len-1]) ++res.len;
+        return res;
+    }
 
-    }*/
+    Tlong remaind_abs(const Tlong &denominator) const
+    {
+        Tlong remaind;
+        for(int i=len; i>0; --i)
+        {
+            remaind<<=1;
+            remaind.number[nmax-1]=number[nmax-i];
+            while(remaind.cmp_abs(denominator)!=-1)
+                remaind=remaind.sub_abs(denominator);
+        }
+        return remaind;
+    }
 public:
     Tlong(int n=0)
     {
@@ -313,6 +347,22 @@ public:
         return res;
     }
 
+    Tlong operator/(const Tlong &denominator) const
+    {
+        Tlong res(divide_abs(denominator));
+        if(res.is_zero() || sign==denominator.sign) return res;
+        res.sign='-';
+        return res;
+    }
+
+    Tlong operator%(const Tlong &denominator) const
+    {
+        Tlong res(remaind_abs(denominator));
+        if(res.is_zero() || sign=='+') return res;
+        res.sign='-';
+        return res;
+    }
+
     Tlong& operator*=(const Tlong &num)
     {
         *this=*this*num;
@@ -348,6 +398,24 @@ public:
 
     friend ostream& operator<<(ostream &out, const Tlong &num);
 };
+
+Tlong pow(int base, int exp)
+{
+    int exp_len_in_bits=0, copy_exp=exp;
+    if(exp==0) exp_len_in_bits=1;
+    while(copy_exp)
+    {
+        ++exp_len_in_bits;
+        copy_exp>>=1;
+    }
+    Tlong res(1);
+    for(int i=exp_len_in_bits-1; i>=0; --i)
+    {
+        res=res*res;
+        if(exp>>i&1) res=res*base;
+    }
+    return res;
+}
 
 istream& operator>>(istream& in, Tlong &num)
 {
@@ -433,12 +501,11 @@ Tlong Fibonacci(int n)
 
 int main()
 {
-    ifstream ifile; ofstream ofile;
-    ifile.open("D:text.txt");
-    Tlong a;
-    ifile>>a;
-    a=a*3;
-    ofile.open("D:text.txt");
-    ofile<<a;
+    ios_base::sync_with_stdio(0);
+    cin.tie(0);
+    cout.tie(0);
+    Tlong a,b;
+    cin>>a>>b;
+
     return 0;
 }
