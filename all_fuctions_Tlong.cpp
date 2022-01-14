@@ -239,8 +239,7 @@ public:
 
     Tlong operator-(const Tlong &num) const
     {
-        Tlong res=*this+(-num);
-        return res;
+        return *this+(-num);
     }
 
     Tlong& operator++()
@@ -434,8 +433,12 @@ Tlong Fibonacci(int n)
 
 int main()
 {
-    ifstream file;
-    file.open("D:text.txt");
-    cout<<Tlong(77)*Tlong(3);
+    ifstream ifile; ofstream ofile;
+    ifile.open("D:text.txt");
+    Tlong a;
+    ifile>>a;
+    a=a*3;
+    ofile.open("D:text.txt");
+    ofile<<a;
     return 0;
 }
