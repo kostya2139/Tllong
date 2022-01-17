@@ -37,8 +37,6 @@ public:
     friend istream& operator>>(istream &in, Tlong &num);
     friend ostream& operator<<(ostream &out, const Tlong &num);
 
-    friend void write_non_periodic_and_periodic_part_right_fraction(Tlong, Tlong);
-
 private:
     char sign='+';
     int number[nmax]={};
