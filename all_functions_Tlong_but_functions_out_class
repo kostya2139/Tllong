@@ -4,23 +4,8 @@ using namespace std;
 class Tlong
 {
 public:
-    const static int nmax=5000;
-    Tlong(int n=0)
-    {
-        sign='+';
-        len=0;
-        if (n<0)
-        {
-            sign='-';
-            n=abs(n);
-        }
-        if (n==0) ++len;
-        while(n)
-        {
-            number[nmax-++len]=n%10;
-            n/=10;
-        }
-    }
+    const static int nmax=10000;
+    Tlong(int);
     bool is_zero() const;
     int get_length() const;
     int cmp(const Tlong &) const;
@@ -31,10 +16,7 @@ public:
     bool operator<=(const Tlong &) const;
     bool operator>=(const Tlong &) const;
     bool operator!=(const Tlong &) const;
-    /*int operator[](int n_dig) const
-    {
-        return number[nmax-len-1+n_dig];
-    }*/
+    int operator[](int) const;
     Tlong operator-() const;
     Tlong operator+(const Tlong &) const;
     Tlong operator-(const Tlong &) const;
@@ -54,6 +36,9 @@ public:
 
     friend istream& operator>>(istream &in, Tlong &num);
     friend ostream& operator<<(ostream &out, const Tlong &num);
+
+    friend void write_non_periodic_and_periodic_part_right_fraction(Tlong, Tlong);
+
 private:
     char sign='+';
     int number[nmax]={};
@@ -70,6 +55,23 @@ private:
     Tlong remaind_abs(const Tlong &denominator) const;
 };
 
+Tlong::Tlong(int n=0)
+{
+    sign='+';
+    len=0;
+    if (n<0)
+    {
+        sign='-';
+        n=abs(n);
+    }
+    if (n==0) ++len;
+    while(n)
+    {
+        number[nmax-++len]=n%10;
+        n/=10;
+    }
+}
+
 int Tlong::cmp(const Tlong &num) const
 {
     if (sign!=num.sign)
@@ -83,8 +85,8 @@ int Tlong::cmp(const Tlong &num) const
 
 int Tlong::cmp_with_zero() const
 {
+    if (len == 1 && number[nmax-1] == 0) return 0;
     if (sign=='-') return -1;
-    if (is_zero()) return 0;
     return 1;
 }
 
@@ -126,6 +128,11 @@ bool Tlong::operator>=(const Tlong &num) const
 bool Tlong::operator!=(const Tlong &num) const
 {
     return cmp(num)!=0;
+}
+
+int Tlong::operator[](int number_dig_from_right_edge) const
+{
+    return number[nmax-number_dig_from_right_edge];
 }
 
 Tlong Tlong::operator-() const
@@ -437,6 +444,32 @@ Tlong Tlong::remaind_abs(const Tlong &denominator) const
     return remaind;
 }
 
+istream& operator>>(istream &in, Tlong &num)
+{
+    string S;
+    in>>S;
+    int length=S.size();
+    num.zeroing(Tlong::nmax-length);
+    if (S[0]=='+' || S[0]=='-')
+    {
+        num.sign=S[0];
+        S.erase(0,1);
+        --length;
+    }
+    num.len=length;
+    for (int i=0; i<num.len; ++i)
+        num.number[Tlong::nmax-num.len+i]=S[i]-48;
+    return in;
+}
+
+ostream& operator<<(ostream &out, const Tlong &num)
+{
+    if(num.sign=='-') out<<num.sign;
+    for (int i=Tlong::nmax-num.len; i<Tlong::nmax; ++i)
+        out<<num.number[i];
+    return out;
+}
+
 int len_n(int n, int base=10)
 {
     if(n==0) return 1;
@@ -476,65 +509,6 @@ Tlong nsk(const Tlong &a, const Tlong &b)
 {
     return a*b/nsd(a,b);
 }
-
-istream& operator>>(istream& in, Tlong &num)
-{
-    string S;
-    in>>S;
-    int length=S.size();
-    num.zeroing(Tlong::nmax-length);
-    if (S[0]=='+' || S[0]=='-')
-    {
-        num.sign=S[0];
-        S.erase(0,1);
-        --length;
-    }
-    num.len=length;
-    for (int i=0; i<num.len; ++i)
-        num.number[Tlong::nmax-num.len+i]=S[i]-48;
-    return in;
-}
-
-ostream& operator<<(ostream &out, const Tlong &num)
-{
-    if(num.sign=='-') out<<num.sign;
-    for (int i=Tlong::nmax-num.len; i<Tlong::nmax; ++i)
-        out<<num.number[i];
-    return out;
-}
-
-/*void inp_2nums(Tlong &num1, Tlong &num2)
-{
-    string S;
-    cin>>S;
-    num1.zeroing();
-    num2.zeroing();
-    int n1_len=0, n2_len=0;
-    num1.sign='+';
-    if (S[0]=='+' || S[0]=='-')
-    {
-        num1.sign=S[0];
-        S.erase(0,1);
-    }
-    int i=1;
-    int len_S=S.size();
-    while (S[len_S-i]!='+' && S[len_S-i]!='-')
-    {
-        ++n2_len;
-        num2.number[nmax-n2_len]=S[len_S-i]-48;
-        ++i;
-    }
-    num2.sign=S[len_S-i];
-    ++i;
-    while (i<=len_S)
-    {
-        ++n1_len;
-        num1.number[nmax-n1_len]=S[len_S-i]-48;
-        ++i;
-    }
-    num1.len=n1_len;
-    num2.len=n2_len;
-}*/
 
 Tlong factorial(int n)
 {
