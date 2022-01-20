@@ -43,14 +43,10 @@ private:
     int len=1;
     void zeroing(int);
     int find_length(int) const;
-    Tlong add_abs(const Tlong &) const;
     int cmp_abs(const Tlong &) const;
+    Tlong add_abs(const Tlong &) const;
     Tlong sub_abs(const Tlong &) const;
-    Tlong half_divide_abs(int) const;
-    int half_divide_ost_abs(int) const;
     Tlong multiply(const Tlong &) const;
-    Tlong divide_abs(const Tlong &) const;
-    Tlong remaind_abs(const Tlong &denominator) const;
 };
 
 Tlong::Tlong(int n=0)
@@ -217,33 +213,78 @@ Tlong Tlong::operator*(const Tlong &num) const
     return num.multiply(*this);
 }
 
+int Tlong::operator%(int denominator) const
+{
+    denominator=abs(denominator);
+    int remaind=0;
+    for (int i=nmax-len; i<nmax; ++i)
+    {
+        remaind=remaind*10+number[i];
+        remaind%=denominator;
+    }
+    if (sign=='-') return -remaind;
+    return remaind;
+}
+
 Tlong Tlong::operator/(int denominator) const
 {
-    Tlong res(half_divide_abs(denominator));
+    Tlong res;
+    denominator=abs(denominator);
+    int remaind=0;
+    for (int i=nmax-len; i<nmax; ++i)
+    {
+        remaind*=10;
+        remaind+=number[i];
+        res.number[i]=remaind/denominator;
+        remaind%=denominator;
+    }
+    res.len=res.find_length(len);
     if(res.is_zero() || sign=='+' && denominator>0 || sign=='-' && denominator<0) return res;
     res.sign='-';
     return res;
 }
 
-Tlong Tlong::operator/(const Tlong &denominator) const
-{
-    Tlong res(divide_abs(denominator));
-    if(res.is_zero() || sign==denominator.sign) return res;
-    res.sign='-';
-    return res;
-}
-
-int Tlong::operator%(int denominator) const
-{
-    int ost=half_divide_ost_abs(denominator);
-    if (sign=='-') return -ost;
-    return ost;
-}
-
 Tlong Tlong::operator%(const Tlong &denominator) const
 {
-    Tlong res(remaind_abs(denominator));
-    if(res.is_zero() || sign=='+') return res;
+    Tlong remaind;
+    for(int i=len; i>0; --i)
+    {
+        remaind<<=1;
+        remaind.number[nmax-1]=number[nmax-i];
+        while(remaind.cmp_abs(denominator)!=-1)
+        remaind=remaind.sub_abs(denominator);
+    }
+    return remaind;
+    if(remaind.is_zero() || sign=='+') return remaind;
+    remaind.sign='-';
+    return remaind;
+}
+
+Tlong Tlong::operator/(const Tlong &denominator) const
+{
+    Tlong remaind;
+    Tlong res;
+    int dig=0;
+    for(int i=len; i>0; --i)
+    {
+        remaind<<=1;
+        remaind.number[nmax-1]=number[nmax-i];
+        while(remaind.cmp_abs(denominator)!=-1)
+        {
+            remaind=remaind.sub_abs(denominator);
+            ++dig;
+        }
+        res.number[nmax-i]=dig;
+        dig=0;
+    }
+    if(len<=denominator.len)
+    {
+        res.len=1;
+        return res;
+    }
+    res.len=len-denominator.len;
+    if (res.number[nmax-res.len-1]) ++res.len;
+    if(res.is_zero() || sign==denominator.sign) return res;
     res.sign='-';
     return res;
 }
@@ -354,34 +395,6 @@ Tlong Tlong::sub_abs(const Tlong &num) const
     return res;
 }
 
-Tlong Tlong::half_divide_abs(int denominator) const
-{
-    Tlong res;
-    denominator=abs(denominator);
-    int remaind=0;
-    for (int i=nmax-len; i<nmax; ++i)
-    {
-        remaind*=10;
-        remaind+=number[i];
-        res.number[i]=remaind/denominator;
-        remaind%=denominator;
-    }
-    res.len=res.find_length(len);
-    return res;
-}
-
-int Tlong::half_divide_ost_abs(int denominator) const
-{
-    denominator=abs(denominator);
-    int remaind=0;
-    for (int i=nmax-len; i<nmax; ++i)
-    {
-        remaind=remaind*10+number[i];
-        remaind%=denominator;
-    }
-    return remaind;
-}
-
 Tlong Tlong::multiply(const Tlong &num) const
 {
     Tlong res;
@@ -400,46 +413,6 @@ Tlong Tlong::multiply(const Tlong &num) const
     if (res.number[nmax-length-1]) ++length;
     res.len=length;
     return res;
-}
-
-Tlong Tlong::divide_abs(const Tlong &denominator) const
-{
-    Tlong remaind;
-    Tlong res;
-    int dig=0;
-    for(int i=len; i>0; --i)
-    {
-        remaind<<=1;
-        remaind.number[nmax-1]=number[nmax-i];
-        while(remaind.cmp_abs(denominator)!=-1)
-        {
-            remaind=remaind.sub_abs(denominator);
-            ++dig;
-        }
-        res.number[nmax-i]=dig;
-        dig=0;
-    }
-    if(len<=denominator.len)
-    {
-        res.len=1;
-        return res;
-    }
-    res.len=len-denominator.len;
-    if (res.number[nmax-res.len-1]) ++res.len;
-    return res;
-}
-
-Tlong Tlong::remaind_abs(const Tlong &denominator) const
-{
-    Tlong remaind;
-    for(int i=len; i>0; --i)
-    {
-        remaind<<=1;
-        remaind.number[nmax-1]=number[nmax-i];
-        while(remaind.cmp_abs(denominator)!=-1)
-            remaind=remaind.sub_abs(denominator);
-    }
-    return remaind;
 }
 
 istream& operator>>(istream &in, Tlong &num)
