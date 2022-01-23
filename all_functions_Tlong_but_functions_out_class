@@ -32,7 +32,6 @@ public:
     Tlong& operator+=(const Tlong &);
     Tlong& operator<<=(int);
     Tlong& operator>>=(int);
-    operator bool() const;
 
     friend istream& operator>>(istream &in, Tlong &num);
     friend ostream& operator<<(ostream &out, const Tlong &num);
@@ -243,7 +242,6 @@ Tlong Tlong::operator/(int denominator) const
     res.sign='-';
     return res;
 }
-
 Tlong Tlong::operator%(const Tlong &denominator) const
 {
     Tlong remaind;
@@ -252,9 +250,8 @@ Tlong Tlong::operator%(const Tlong &denominator) const
         remaind<<=1;
         remaind.number[nmax-1]=number[nmax-i];
         while(remaind.cmp_abs(denominator)!=-1)
-        remaind=remaind.sub_abs(denominator);
+            remaind=remaind.sub_abs(denominator);
     }
-    return remaind;
     if(remaind.is_zero() || sign=='+') return remaind;
     remaind.sign='-';
     return remaind;
@@ -318,11 +315,6 @@ Tlong& Tlong::operator>>=(int n_shifts)
     for(int i=nmax-len; i<min(nmax-len+n_shifts, nmax-1); ++i) number[i]=0;
     len=max(1, len-n_shifts);
     return *this;
-}
-
-Tlong::operator bool() const
-{
-    return !(len == 1 && number[nmax-1] == 0);
 }
 
 void Tlong::zeroing(int n_end=nmax)
@@ -467,7 +459,7 @@ Tlong pow(int base, int exp)
 
 Tlong nsd(Tlong a, Tlong b)
 {
-    while(a && b)
+    while(a.cmp_with_zero() && b.cmp_with_zero())
     {
         if(a<b) swap(a,b);
         a=a%b;
