@@ -1,9 +1,12 @@
 #ifndef TLONG_CLASS_H_INCLUDED
 #define TLONG_CLASS_H_INCLUDED
 
+#include<string>
+#include<iostream>
+
 class Tlong
 {
-    const static int nmax=20000;
+    const static int nmax=100;
     char sign='+';
     int number[nmax]={};
     int len=1;
@@ -14,7 +17,9 @@ class Tlong
     Tlong sub_abs(const Tlong &) const;
     Tlong multiply(const Tlong &) const;
 public:
+    static int get_n_max() {return nmax;}
     Tlong(int);
+    Tlong(const std::string&);
     bool is_zero() const;
     int get_length() const;
     int cmp(const Tlong &) const;
@@ -41,6 +46,8 @@ public:
     Tlong& operator+=(const Tlong &);
     Tlong& operator<<=(int);
     Tlong& operator>>=(int);
+    std::string to_string() const;
+    long double to_double() const;
 
     friend std::istream& operator>>(std::istream &in, Tlong &num);
     friend std::ostream& operator<<(std::ostream &out, const Tlong &num);
@@ -62,6 +69,21 @@ Tlong::Tlong(int n=0)
         number[nmax-++len]=n%10;
         n/=10;
     }
+}
+
+Tlong::Tlong(const std::string& S)
+{
+    int i=0;
+    int length=S.size();
+    if (S[0]=='+' || S[0]=='-')
+    {
+        sign=S[0];
+        ++i;
+        --length;
+    }
+    len=length;
+    for (; i<len; ++i)
+        number[nmax-len+i]=S[i]-48;
 }
 
 int Tlong::cmp(const Tlong &num) const
@@ -408,8 +430,32 @@ Tlong Tlong::multiply(const Tlong &num) const
     return res;
 }
 
+std::string Tlong::to_string() const
+{
+    std::string s;
+    int i=0;
+    if(sign == '-') {s.resize(len+1); s[i++] = sign;}
+    else s.resize(len);
+    for (int j = nmax-len; j<nmax; ++j)
+        s[i++] = number[j] + '0';
+    return s;
+}
+
+long double Tlong::to_double() const
+{
+    long double res = 0;
+    for(int i=std::min(30, len); i>0; --i)
+    {
+        res *= 10;
+        res += number[nmax-i];
+    }
+    if(sign == '-') return -res;
+    return res;
+}
+
 std::istream& operator>>(std::istream &in, Tlong &num)
 {
+    int i=0;
     std::string S;
     in>>S;
     int length=S.size();
@@ -417,11 +463,11 @@ std::istream& operator>>(std::istream &in, Tlong &num)
     if (S[0]=='+' || S[0]=='-')
     {
         num.sign=S[0];
-        S.erase(0,1);
+        ++i;
         --length;
     }
     num.len=length;
-    for (int i=0; i<num.len; ++i)
+    for (; i<num.len; ++i)
         num.number[Tlong::nmax-num.len+i]=S[i]-48;
     return in;
 }
@@ -433,5 +479,42 @@ std::ostream& operator<<(std::ostream &out, const Tlong &num)
         out<<num.number[i];
     return out;
 }
+
+Tlong operator*(int num1, const Tlong& num2)
+{
+    return num2*num1;
+}
+
+Tlong operator+(int num1, const Tlong& num2)
+{
+    return num2+num1;
+}
+
+Tlong pow(int base, int exp)
+{
+    int exp_len_in_bits=0, copy_exp=exp;
+    if(exp==0) exp_len_in_bits=1;
+    while(copy_exp)
+    {
+        ++exp_len_in_bits;
+        copy_exp>>=1;
+    }
+    Tlong res(1);
+    for(int i=exp_len_in_bits-1; i>=0; --i)
+    {
+        res=res*res;
+        if(exp>>i&1) res=res*base;
+    }
+    return res;
+}
+
+long double operator+(const long double& a, const Tlong& b) {return a+b.to_double();}
+long double operator+(const Tlong& b, const long double& a) {return a+b.to_double();}
+long double operator-(const long double& a, const Tlong& b) {return a-b.to_double();}
+long double operator-(const Tlong& b, const long double& a) {return b.to_double()-a;}
+long double operator*(const long double& a, const Tlong& b) {return a*b.to_double();}
+long double operator*(const Tlong& b, const long double& a) {return a*b.to_double();}
+long double operator/(const long double& a, const Tlong& b) {return a/b.to_double();}
+long double operator/(const Tlong& b, const long double& a) {return b.to_double()/a;}
 
 #endif // TLONG_CLASS_H_INCLUDED
